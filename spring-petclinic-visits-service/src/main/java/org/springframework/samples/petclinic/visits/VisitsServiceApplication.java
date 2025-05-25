@@ -30,5 +30,5 @@ public class VisitsServiceApplication {
         SpringApplication.run(VisitsServiceApplication.class, args);
     }
 
-    // trigger build new image
+    // trigger build new image 2
 }
