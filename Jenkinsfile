@@ -73,7 +73,7 @@ pipeline {
 
                     /* ---------- 3.  DIAGNOSTICS ---------- */
                     echo '=== Build Information ==='
-                    echo "📍 Ref type   : ${env.IS_TAG_BUILD ? 'TAG' : 'BRANCH'}"
+                    echo "📍 Ref type   : ${env.IS_TAG_BUILD == true ? 'TAG' : 'BRANCH'}"
                     echo "🔖 Commit ID  : ${env.COMMIT_ID}"
                     echo "🏷️  Primary   : ${env.PRIMARY_TAG}"
                     echo "🏷️  Secondary : ${env.SECONDARY_TAG}"
@@ -482,7 +482,7 @@ pipeline {
         }
 
         stage('📦 Update Helm Charts repo') {
-            when { expression { env.IS_TAG_BUILD } }
+            when { expression { env.IS_TAG_BUILD == true } }
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                     script {
