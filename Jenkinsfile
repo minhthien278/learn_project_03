@@ -73,7 +73,7 @@ pipeline {
 
                     /* ---------- 3.  DIAGNOSTICS ---------- */
                     echo '=== Build Information ==='
-                    echo "📍 Ref type   : ${isTagBuild ? 'TAG' : 'BRANCH'}"
+                    echo "📍 Ref type   : ${env.IS_TAG_BUILD ? 'TAG' : 'BRANCH'}"
                     echo "🔖 Commit ID  : ${env.COMMIT_ID}"
                     echo "🏷️  Primary   : ${env.PRIMARY_TAG}"
                     echo "🏷️  Secondary : ${env.SECONDARY_TAG}"
