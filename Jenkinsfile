@@ -54,9 +54,9 @@ pipeline {
                     env.COMMIT_MESSAGE  = sh(returnStdout: true,
                                             script: 'git log -1 --pretty=%B').trim()
 
-                    env.IS_TAG_BUILD = env.TAG_NAME?.trim() != null ? true : false
+                    env.IS_TAG_BUILD = env.TAG_NAME?.trim() != 'null' ? true : false
 
-                    if (env.IS_TAG_BUILD) {
+                    if (env.IS_TAG_BUILD == true) {
                         env.PRIMARY_TAG   = env.TAG_NAME          // e.g. v1.2.3
                         env.SECONDARY_TAG = ''                    // not needed
                         echo "🏷️  Detected tag build: ${env.TAG_NAME}"
