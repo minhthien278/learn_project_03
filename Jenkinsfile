@@ -54,9 +54,8 @@ pipeline {
                     env.COMMIT_MESSAGE  = sh(returnStdout: true,
                                             script: 'git log -1 --pretty=%B').trim()
 
-                    def tag = env.TAG_NAME?.trim()?.toLowerCase()
-                    env.IS_TAG_BUILD = (tag && tag != 'null')
-
+                    env.IS_TAG_BUILD = env.GIT_REF?.startsWith("refs/tags/") ?: false
+                    
                     if (env.IS_TAG_BUILD) {
                         env.PRIMARY_TAG   = env.TAG_NAME          // e.g. v1.2.3
                         env.SECONDARY_TAG = ''                    // not needed
@@ -74,7 +73,7 @@ pipeline {
 
                     /* ---------- 3.  DIAGNOSTICS ---------- */
                     echo '=== Build Information ==='
-                    echo "📍 Ref type   : ${env.IS_TAG_BUILD == true ? 'TAG' : 'BRANCH'}"
+                    echo "📍 Ref type   : ${env.IS_TAG_BUILD ? 'TAG' : 'BRANCH'}"
                     echo "🔖 Commit ID  : ${env.COMMIT_ID}"
                     echo "🏷️  Primary   : ${env.PRIMARY_TAG}"
                     echo "🏷️  Secondary : ${env.SECONDARY_TAG}"
