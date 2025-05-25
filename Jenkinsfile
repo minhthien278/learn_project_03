@@ -58,7 +58,7 @@ pipeline {
 
                     if (env.IS_TAG_BUILD.toBoolean()) {
                         env.PRIMARY_TAG   = env.TAG_NAME          // e.g. v1.2.3
-                        env.SECONDARY_TAG = ''                    // not needed
+                        env.SECONDARY_TAG = env.TAG_NAME                    
                         echo "🏷️  Detected tag build: ${env.TAG_NAME}"
                     } else {
                         // Normal branch / PR build (your original logic)
