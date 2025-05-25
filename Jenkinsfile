@@ -54,9 +54,9 @@ pipeline {
                     env.COMMIT_MESSAGE  = sh(returnStdout: true,
                                             script: 'git log -1 --pretty=%B').trim()
 
-                    env.IS_TAG_BUILD = env.GIT_REF?.startsWith("refs/tags/") ?: false
-                    
-                    if (env.IS_TAG_BUILD) {
+                    env.IS_TAG_BUILD = env.TAG_NAME?.startsWith("v") ? true : false
+
+                    if (env.IS_TAG_BUILD.toBoolean()) {
                         env.PRIMARY_TAG   = env.TAG_NAME          // e.g. v1.2.3
                         env.SECONDARY_TAG = ''                    // not needed
                         echo "🏷️  Detected tag build: ${env.TAG_NAME}"
@@ -73,7 +73,7 @@ pipeline {
 
                     /* ---------- 3.  DIAGNOSTICS ---------- */
                     echo '=== Build Information ==='
-                    echo "📍 Ref type   : ${env.IS_TAG_BUILD ? 'TAG' : 'BRANCH'}"
+                    echo "📍 Ref type   : ${env.IS_TAG_BUILD.toBoolean() ? 'TAG' : 'BRANCH'}"
                     echo "🔖 Commit ID  : ${env.COMMIT_ID}"
                     echo "🏷️  Primary   : ${env.PRIMARY_TAG}"
                     echo "🏷️  Secondary : ${env.SECONDARY_TAG}"
@@ -96,8 +96,8 @@ pipeline {
                     env.GENAI_SERVICE_CHANGED = "false"
                     
                     // For first build or when specifically requested, build everything
-                    if (params.FORCE_BUILD_ALL == true || currentBuild.number == 1) {
-                        echo "Building all services (first build or forced build)"
+                    if (params.FORCE_BUILD_ALL == true || currentBuild.number == 1 || env.IS_TAG_BUILD.toBoolean()) {
+                        echo "Building all services (first build or forced build or tag build)"
                         env.CONFIG_SERVER_CHANGED = "true"
                         env.DISCOVERY_SERVER_CHANGED = "true"
                         env.ADMIN_SERVER_CHANGED = "true"
@@ -482,7 +482,7 @@ pipeline {
         }
 
         stage('📦 Update Helm Charts repo') {
-            when { expression { env.IS_TAG_BUILD } }
+            when { expression { env.IS_TAG_BUILD.toBoolean() } }
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                     script {
