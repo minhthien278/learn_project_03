@@ -35,40 +35,50 @@ pipeline {
     }
     
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                sh "git fetch --all"
+            }
+        }
+
         stage('🚀 Initialize') {
             steps {
                 script {
                     echo "🎯 Starting CI Pipeline for PetClinic Microservices"
                     echo "📍 Branch: ${env.BRANCH_NAME}"
                     echo "🔨 Build Number: ${env.BUILD_NUMBER}"
-                    
-                    // Get commit info
-                    env.COMMIT_ID = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    env.COMMIT_MESSAGE = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
-                    
-                    // Create image tags based on branch
-                    if (env.BRANCH_NAME == 'main') {
-                        env.PRIMARY_TAG = 'latest'
-                        env.SECONDARY_TAG = env.COMMIT_ID
+
+                    env.COMMIT_ID       = sh(returnStdout: true,
+                                            script: 'git rev-parse --short HEAD').trim()
+                    env.COMMIT_MESSAGE  = sh(returnStdout: true,
+                                            script: 'git log -1 --pretty=%B').trim()
+
+                    env.IS_TAG_BUILD = env.TAG_NAME?.trim()
+
+                    if (env.IS_TAG_BUILD) {
+                        env.PRIMARY_TAG   = env.TAG_NAME          // e.g. v1.2.3
+                        env.SECONDARY_TAG = ''                    // not needed
+                        echo "🏷️  Detected tag build: ${env.TAG_NAME}"
                     } else {
-                        env.PRIMARY_TAG = "${env.BRANCH_NAME}-${env.COMMIT_ID}".replace('/', '-')
-                        env.SECONDARY_TAG = env.BRANCH_NAME.replace('/', '-')
+                        // Normal branch / PR build (your original logic)
+                        if (env.BRANCH_NAME == 'main') {
+                            env.PRIMARY_TAG   = 'latest'
+                            env.SECONDARY_TAG = env.COMMIT_ID
+                        } else {
+                            env.PRIMARY_TAG   = "${env.BRANCH_NAME}-${env.COMMIT_ID}".replace('/', '-')
+                            env.SECONDARY_TAG = env.BRANCH_NAME.replace('/', '-')
+                        }
                     }
-                    
-                    echo "=== Build Information ==="
-                    echo "📍 Branch: ${env.BRANCH_NAME}"
-                    echo "🔖 Commit ID: ${env.COMMIT_ID}"
-                    echo "🏷️ Primary Tag: ${env.PRIMARY_TAG}"
-                    echo "🏷️ Secondary Tag: ${env.SECONDARY_TAG}"
-                    echo "💬 Commit: ${env.COMMIT_MESSAGE}"
+
+                    /* ---------- 3.  DIAGNOSTICS ---------- */
+                    echo '=== Build Information ==='
+                    echo "📍 Ref type   : ${isTagBuild ? 'TAG' : 'BRANCH'}"
+                    echo "🔖 Commit ID  : ${env.COMMIT_ID}"
+                    echo "🏷️  Primary   : ${env.PRIMARY_TAG}"
+                    echo "🏷️  Secondary : ${env.SECONDARY_TAG}"
+                    echo "💬 Commit msg : ${env.COMMIT_MESSAGE}"
                 }
-            }
-        }
-        
-        stage('Checkout') {
-            steps {
-                checkout scm
-                sh "git fetch --all"
             }
         }
         
@@ -119,69 +129,47 @@ pipeline {
                                 changeSet = changeSet.split('\n')
                                 echo "Changed files: ${changeSet.join(', ')}"
                                 
-                                // Check for changes in parent POM or shared files
-                                def parentPomChanged = false
+
+                                // Check each path in the change set
                                 changeSet.each { change ->
-                                    if (change == "pom.xml" || 
-                                        change.startsWith("docker/") || 
-                                        change.startsWith(".github/") || 
-                                        change.startsWith("Jenkinsfile")) {
-                                        parentPomChanged = true
+                                    if (change.startsWith(CONFIG_SERVER_PATH)) {
+                                        env.CONFIG_SERVER_CHANGED = "true"
+                                        echo "Config Server changes detected"
+                                    }
+                                    else if (change.startsWith(DISCOVERY_SERVER_PATH)) {
+                                        env.DISCOVERY_SERVER_CHANGED = "true" 
+                                        echo "Discovery Server changes detected"
+                                    }
+                                    else if (change.startsWith(ADMIN_SERVER_PATH)) {
+                                        env.ADMIN_SERVER_CHANGED = "true"
+                                        echo "Admin Server changes detected"
+                                    }
+                                    else if (change.startsWith(API_GATEWAY_PATH)) {
+                                        env.API_GATEWAY_CHANGED = "true"
+                                        echo "API Gateway changes detected"
+                                    }
+                                    else if (change.startsWith(CUSTOMERS_SERVICE_PATH)) {
+                                        env.CUSTOMERS_SERVICE_CHANGED = "true"
+                                        echo "Customers Service changes detected"
+                                    }
+                                    else if (change.startsWith(VISITS_SERVICE_PATH)) {
+                                        env.VISITS_SERVICE_CHANGED = "true"
+                                        echo "Visits Service changes detected"
+                                    }
+                                    else if (change.startsWith(VETS_SERVICE_PATH)) {
+                                        env.VETS_SERVICE_CHANGED = "true"
+                                        echo "Vets Service changes detected"
+                                    }
+                                    else if (change.startsWith(GENAI_SERVICE_PATH)) {
+                                        env.GENAI_SERVICE_CHANGED = "true"
+                                        echo "GenAI Service changes detected"
                                     }
                                 }
                                 
-                                if (parentPomChanged) {
-                                    echo "Parent POM or shared files changed - building all services"
-                                    env.CONFIG_SERVER_CHANGED = "true"
-                                    env.DISCOVERY_SERVER_CHANGED = "true"
-                                    env.ADMIN_SERVER_CHANGED = "true" 
-                                    env.API_GATEWAY_CHANGED = "true"
-                                    env.CUSTOMERS_SERVICE_CHANGED = "true"
-                                    env.VISITS_SERVICE_CHANGED = "true"
-                                    env.VETS_SERVICE_CHANGED = "true"
-                                    env.GENAI_SERVICE_CHANGED = "true"
-                                } else {
-                                    // Check each path in the change set
-                                    changeSet.each { change ->
-                                        if (change.startsWith(CONFIG_SERVER_PATH)) {
-                                            env.CONFIG_SERVER_CHANGED = "true"
-                                            echo "Config Server changes detected"
-                                        }
-                                        else if (change.startsWith(DISCOVERY_SERVER_PATH)) {
-                                            env.DISCOVERY_SERVER_CHANGED = "true" 
-                                            echo "Discovery Server changes detected"
-                                        }
-                                        else if (change.startsWith(ADMIN_SERVER_PATH)) {
-                                            env.ADMIN_SERVER_CHANGED = "true"
-                                            echo "Admin Server changes detected"
-                                        }
-                                        else if (change.startsWith(API_GATEWAY_PATH)) {
-                                            env.API_GATEWAY_CHANGED = "true"
-                                            echo "API Gateway changes detected"
-                                        }
-                                        else if (change.startsWith(CUSTOMERS_SERVICE_PATH)) {
-                                            env.CUSTOMERS_SERVICE_CHANGED = "true"
-                                            echo "Customers Service changes detected"
-                                        }
-                                        else if (change.startsWith(VISITS_SERVICE_PATH)) {
-                                            env.VISITS_SERVICE_CHANGED = "true"
-                                            echo "Visits Service changes detected"
-                                        }
-                                        else if (change.startsWith(VETS_SERVICE_PATH)) {
-                                            env.VETS_SERVICE_CHANGED = "true"
-                                            echo "Vets Service changes detected"
-                                        }
-                                        else if (change.startsWith(GENAI_SERVICE_PATH)) {
-                                            env.GENAI_SERVICE_CHANGED = "true"
-                                            echo "GenAI Service changes detected"
-                                        }
-                                    }
-                                    
-                                    // Handle infrastructure service changes that would affect other services
-                                    if (env.CONFIG_SERVER_CHANGED == "true") {
-                                        echo "Config Server changes may affect all services"
-                                        // Optionally build all services if config server changes
-                                    }
+                                // Handle infrastructure service changes that would affect other services
+                                if (env.CONFIG_SERVER_CHANGED == "true") {
+                                    echo "Config Server changes may affect all services"
+                                    // Optionally build all services if config server changes
                                 }
                             } else {
                                 echo "No changes detected or git diff returned empty result"
@@ -490,6 +478,13 @@ pipeline {
                     echo ""
                     echo "🏁 Pipeline completed at: ${new Date()}"
                 }
+            }
+        }
+
+        stage('Update config repo') {
+            when { expression { env.TAG } }
+            steps {
+                echo "🔄 Updating config repository with new tag..."
             }
         }
     }
