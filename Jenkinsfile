@@ -54,7 +54,7 @@ pipeline {
                     env.COMMIT_MESSAGE  = sh(returnStdout: true,
                                             script: 'git log -1 --pretty=%B').trim()
 
-                    env.IS_TAG_BUILD = env.TAG_NAME?.trim()
+                    env.IS_TAG_BUILD = env.TAG_NAME?.trim() != null ? true : false
 
                     if (env.IS_TAG_BUILD) {
                         env.PRIMARY_TAG   = env.TAG_NAME          // e.g. v1.2.3
@@ -481,10 +481,32 @@ pipeline {
             }
         }
 
-        stage('Update config repo') {
-            when { expression { env.TAG } }
+        stage('📦 Update Helm Charts repo') {
+            when { expression { env.IS_TAG_BUILD } }
             steps {
-                echo "🔄 Updating config repository with new tag..."
+                withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                    script {
+                        echo "🔄 Cloning spring-petclinic-config to update image tags → ${env.PRIMARY_TAG}"
+                        sh '''
+                            rm -rf spring-petclinic-config || true
+                            git clone https://$GITHUB_TOKEN@github.com/Tondeptrai23/spring-petclinic-config.git
+                            cd spring-petclinic-config
+                            git config user.email "22120375@student.hcmus.edu.vn"
+                            git config user.name  "Tondeptrai23"
+
+                            # Update every 'tag:' entry in the staging values file
+                            sed -i -E "s/tag: .*/tag: ${PRIMARY_TAG}/g" helm-charts/staging/values.yaml
+
+                            if git diff --quiet; then
+                                echo '⚠️  No tag changes detected – nothing to commit'
+                            else
+                                git add helm-charts/staging/values.yaml
+                                git commit -m "chore(ci): bump image tags to ${PRIMARY_TAG}"
+                                git push origin main
+                            fi
+                        '''
+                    }
+                }
             }
         }
     }
