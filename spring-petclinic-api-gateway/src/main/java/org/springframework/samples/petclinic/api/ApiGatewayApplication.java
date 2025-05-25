@@ -45,7 +45,7 @@ import java.time.Duration;
 @EnableDiscoveryClient
 @SpringBootApplication
 public class ApiGatewayApplication {
-
+    // trigger build
     public static void main(String[] args) {
         SpringApplication.run(ApiGatewayApplication.class, args);
     }
