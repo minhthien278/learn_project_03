@@ -491,8 +491,8 @@ pipeline {
                             rm -rf spring-petclinic-config || true
                             git clone https://$GITHUB_TOKEN@github.com/Tondeptrai23/spring-petclinic-config.git
                             cd spring-petclinic-config
-                            git config user.email "22120375@student.hcmus.edu.vn"
-                            git config user.name  "Tondeptrai23"
+                            git config user.email "ci.bot@jenkins.local"
+                            git config user.name  "jenkins.ci.bot"
 
                             # Update every 'tag:' entry in the staging values file
                             sed -i -E "s/tag: .*/tag: ${PRIMARY_TAG}/g" helm-charts/staging/values.yaml
