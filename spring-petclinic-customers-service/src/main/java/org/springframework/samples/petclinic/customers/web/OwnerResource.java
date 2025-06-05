@@ -51,6 +51,12 @@ class OwnerResource {
         this.ownerEntityMapper = ownerEntityMapper;
     }
 
+    @GetMapping("/error")
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public void error() {
+        throw new RuntimeException("This is a test exception");
+    }
+
     /**
      * Create Owner
      */

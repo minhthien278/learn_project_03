@@ -64,6 +64,12 @@ class VisitResource {
         return visitRepository.save(visit);
     }
 
+    @GetMapping("/error")
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public void error() {
+        throw new RuntimeException("This is a test exception");
+    }
+
     @GetMapping("owners/*/pets/{petId}/visits")
     public List<Visit> read(@PathVariable("petId") @Min(1) int petId) {
         return visitRepository.findByPetId(petId);
