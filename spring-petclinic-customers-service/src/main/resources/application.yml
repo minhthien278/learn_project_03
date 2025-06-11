@@ -17,4 +17,15 @@ management:
   endpoints:
     web:
       exposure:
-        include: prometheus
+        include: prometheus,health,info,metrics,gateway,trace
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    enabled: ${MANAGEMENT_TRACING_ENABLED:true}
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}
+  zipkin:
+    tracing:
+      enabled: ${MANAGEMENT_ZIPKIN_TRACING_ENABLED:true}
+      endpoint: ${MANAGEMENT_ZIPKIN_TRACING_ENDPOINT:http://zipkin:9411/api/v2/spans}

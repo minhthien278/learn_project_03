@@ -25,3 +25,24 @@ management:
     web:
       exposure:
         include: prometheus
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    enabled: ${MANAGEMENT_TRACING_ENABLED:true}
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}
+  zipkin:
+    tracing:
+      enabled: ${MANAGEMENT_ZIPKIN_TRACING_ENABLED:true}
+      endpoint: ${MANAGEMENT_ZIPKIN_TRACING_ENDPOINT:http://zipkin:9411/api/v2/spans}
+
+logging:
+  pattern:
+    level: ${LOGGING_PATTERN_LEVEL:%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]}
+  level:
+    org:
+      springframework:
+        boot: INFO
+        web: INFO
+    io.micrometer.tracing: ${LOGGING_LEVEL_IO_MICROMETER_TRACING:DEBUG}
