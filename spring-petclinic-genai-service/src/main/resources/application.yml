@@ -49,7 +49,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: prometheus
+        include: "*"
   endpoint:
     health:
       show-details: always
@@ -61,7 +61,12 @@ management:
     tracing:
       enabled: true
       endpoint: "http://zipkin.tracing.svc.cluster.local:9411/api/v2/spans"
-
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
 logging:
   pattern:
     level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
