@@ -22,9 +22,6 @@ management:
     enabled: true
     sampling:
       probability: 1.0
-    propagation:
-      tags:
-        enabled: true
   zipkin:
     tracing:
       enabled: true
@@ -32,6 +29,10 @@ management:
   endpoint:
     health:
       show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 logging:
   pattern:
