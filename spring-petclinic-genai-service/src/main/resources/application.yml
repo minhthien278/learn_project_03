@@ -64,7 +64,7 @@ management:
 
 logging:
   pattern:
-    level: ${LOGGING_PATTERN_LEVEL:%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]}
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
   level:
     org:
       springframework:
@@ -72,4 +72,4 @@ logging:
           chat:
             client:
               advisor: DEBUG
-    io.micrometer.tracing: ${LOGGING_LEVEL_IO_MICROMETER_TRACING:DEBUG}
+    io.micrometer.tracing: DEBUG

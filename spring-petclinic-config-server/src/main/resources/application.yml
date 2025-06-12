@@ -1,18 +1,17 @@
-server.port: 8888
+server:
+  port: 8888
+
 spring:
+  application:
+    name: config-server
   cloud:
     config:
       server:
         git:
           uri: https://github.com/spring-petclinic/spring-petclinic-microservices-config
           default-label: main
-        # Use the File System Backend to avoid git pulling. Enable "native" profile in the Config Server.
         native:
-          searchLocations: file:///${GIT_REPO}
-
-spring:
-  application:
-    name: config-server
+          search-locations: file:///${GIT_REPO}  
 
 management:
   endpoints:
@@ -33,6 +32,6 @@ management:
 
 logging:
   pattern:
-    level: ${LOGGING_PATTERN_LEVEL:%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]}
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
   level:
-    io.micrometer.tracing: ${LOGGING_LEVEL_IO_MICROMETER_TRACING:DEBUG}
+    io.micrometer.tracing: DEBUG
