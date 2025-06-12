@@ -1,9 +1,5 @@
-server:
-  port: 8888
-
+server.port: 8888
 spring:
-  application:
-    name: config-server
   cloud:
     config:
       server:
@@ -11,24 +7,19 @@ spring:
           uri: https://github.com/spring-petclinic/spring-petclinic-microservices-config
           default-label: main
         native:
-          search-locations: file:///${GIT_REPO}  
-
+          searchLocations: file:///${GIT_REPO}
 management:
+  zipkin:
+    tracing:
+      endpoint: http://zipkin.observability:9411/api/v2/spans
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: always
-  tracing:
-    enabled: true
-    sampling:
-      probability: 1.0
-  zipkin:
-    tracing:
-      enabled: true
-      endpoint: "http://zipkin.tracing.svc.cluster.local:9411/api/v2/spans"
+        include: "*"
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 
 logging:
   pattern:
