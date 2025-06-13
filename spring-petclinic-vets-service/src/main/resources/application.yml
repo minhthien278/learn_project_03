@@ -7,14 +7,12 @@ spring:
     cache-names: vets
   profiles:
     active: production
-
 ---
 spring:
   config:
     activate:
       on-profile: docker
     import: configserver:http://config-server:8888
-
 ---
 management:
   endpoints:
@@ -40,6 +38,13 @@ management:
             requests: true
 logging:
   pattern:
-    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+    console: "%clr(%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}){faint} %clr(%5p) %clr([%X{traceId:-},%X{spanId:-}]){yellow} %clr([%15.15t]){magenta} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n"
+    file: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5p [%X{traceId:-},%X{spanId:-}] [%t] %-40.40logger{39} : %m%n"
   level:
     io.micrometer.tracing: DEBUG
+    org.springframework.cloud.sleuth: DEBUG
+    org.springframework.cloud.sleuth.autoconfig: DEBUG
+    org.springframework.web: DEBUG
+  charset:
+    console: UTF-8
+    file: UTF-8
