@@ -489,7 +489,7 @@ pipeline {
                         echo "🔄 Cloning spring-petclinic-config to update image tags → ${env.PRIMARY_TAG}"
                         sh '''
                             rm -rf spring-petclinic-config || true
-                            git clone https://$GITHUB_TOKEN@github.com/Tondeptrai23/spring-petclinic-config.git
+                            git clone https://$GITHUB_TOKEN@github.com/minhthien278/learn_project_03_config.git
                             cd spring-petclinic-config
                             git config user.email "ci.bot@jenkins.local"
                             git config user.name  "jenkins.ci.bot"
